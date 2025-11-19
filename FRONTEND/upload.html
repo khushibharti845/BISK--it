@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BISK-it | Upload Your Recipe</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: url('https://images.unsplash.com/photo-1498579150354-977475b7ea0b?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+      background-size: cover;
+      font-family: "Poppins", sans-serif;
+      color: #37423d;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      width: 100%; height: 100%;
+      background: rgba(248, 247, 244, 0.92);
+      top: 0; left: 0; z-index: -1;
+    }
+    header {background: rgba(136,160,144,0.9); display: flex; justify-content: space-between; align-items: center; padding: 10px 60px;}
+    header .logo {font-size: 1.8rem; font-weight: 600; color: #f7f6f2;}
+    nav a {color: #f7f6f2; text-decoration: none; margin: 0 15px; border-radius: 20px; padding: 6px 10px;}
+    nav a:hover {background: rgba(255,255,255,0.25);}
+    nav a.active {background: #e6e4dd; color: #37423d;}
+    nav .btn {background: #e6e4dd; color: #446b5c; padding: 8px 15px; border-radius: 25px;}
+    
+    .upload-container {
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .upload-container h1 {
+      color: #446b5c;
+      margin-bottom: 25px;
+    }
+    form {
+      background: #fff;
+      max-width: 600px;
+      margin: auto;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    input, textarea {
+      width: 100%; margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #cdd7cc;
+      background: #f9f9f8;
+    }
+    button {
+      background: #446b5c;
+      color: #fff;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+    }
+    button:hover {background: #5c8f7a;}
+    footer {background: #37423d; color: #dce1dc; text-align: center; padding: 30px 20px; margin-top: 60px;}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🥗 BISK-it</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="recipe.html">Recipes</a>
+      <a href="upload.html" class="active">Upload</a>
+      <a href="community.html">Community</a>
+      <a href="login.html" class="btn">Login</a>
+    </nav>
+  </header>
+
+  <section class="upload-container">
+    <h1>📤 Share Your Recipe</h1>
+    <form>
+      <input type="text" placeholder="Recipe Title" required>
+      <input type="text" placeholder="Cuisine Type (e.g., Italian, Indian)">
+      <textarea rows="4" placeholder="Ingredients (comma separated)" required></textarea>
+      <textarea rows="4" placeholder="Instructions" required></textarea>
+      <input type="file" accept="image/*">
+      <button type="submit">Submit Recipe</button>
+    </form>
+  </section>
+
+  <footer>
+    <p>© 2025 BISK-it | Developed by Team GLA</p>
+  </footer>
+</body>
+</html>

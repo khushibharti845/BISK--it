@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BISK-it | Recipes (Dynamic)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:"Poppins",sans-serif}
+  html{scroll-behavior:smooth}
+  body{
+    background:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1920&q=80') no-repeat center/cover fixed;
+    color:#37423d;
+    min-height:100vh;
+  }
+  body::before{content:"";position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(248,247,244,0.92);z-index:-1}
+
+  /* Header */
+  header{display:flex;justify-content:space-between;align-items:center;padding:12px 40px;background:rgba(136,160,144,0.92);backdrop-filter:blur(6px);position:sticky;top:0;z-index:1000;box-shadow:0 2px 10px rgba(0,0,0,0.08)}
+  .logo{font-size:1.6rem;color:#f7f6f2;font-weight:600}
+  nav a{color:#f7f6f2;text-decoration:none;margin:0 12px;padding:6px 10px;border-radius:18px;transition:all .2s}
+  nav a:hover{background:rgba(255,255,255,0.18)}
+  nav a.active{background:#e6e4dd;color:#37423d}
+  .btn{background:#e6e4dd;color:#446b5c;padding:8px 14px;border-radius:22px;text-decoration:none}
+
+  /* Page padding */
+  main{padding:36px 40px 80px}
+
+  .top-intro{text-align:center;margin-bottom:18px}
+  .top-intro h1{font-size:2.2rem;color:#446b5c;margin-bottom:8px}
+  .top-intro p{color:#55625d;margin-bottom:16px}
+
+  /* Search & controls */
+  .controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin-bottom:18px}
+  .search-bar{display:flex;gap:10px}
+  .search-bar input{padding:12px 16px;width:320px;border-radius:30px;border:none;outline:none;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.06)}
+  .search-bar button{padding:12px 18px;border-radius:30px;border:none;background:#446b5c;color:#fff;cursor:pointer;box-shadow:0 6px 14px rgba(68,107,92,0.12)}
+  .cuisine-filter{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .cuisine-btn{background:#e6e4dd;color:#37423d;padding:8px 16px;border-radius:20px;border:none;cursor:pointer;font-weight:500}
+  .cuisine-btn.active{background:#446b5c;color:#f7f6f2;box-shadow:0 6px 14px rgba(68,107,92,0.15)}
+  .preference{display:flex;gap:10px;align-items:center}
+  .preference input{display:none}
+  .preference label{background:#e6e4dd;padding:8px 14px;border-radius:20px;cursor:pointer}
+  .preference input:checked + label{background:#446b5c;color:#fff}
+
+  /* favorites toggle */
+  .fav-toggle{background:#fff;border:1px solid #dcd7cf;padding:8px 14px;border-radius:22px;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.06)}
+
+  /* Grid */
+  .recipe-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:20px}
+  .recipe-card{background:rgba(255,255,255,0.96);border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.06);position:relative;transition:transform .18s,box-shadow .18s}
+  .recipe-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(68,107,92,0.12)}
+  .recipe-card img{width:100%;height:160px;object-fit:cover;display:block}
+  .recipe-card .body{padding:12px 14px 48px}
+  .recipe-card h3{color:#446b5c;font-size:1.05rem;margin-bottom:6px}
+  .recipe-card p{color:#55625d;font-size:0.93rem;min-height:38px}
+  .meta{font-size:0.82rem;color:#829383;margin-top:8px}
+
+  /* favorite button (heart) */
+  .fav-btn{position:absolute;bottom:12px;right:12px;background:#fff;border-radius:50%;width:42px;height:42px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#446b5c;box-shadow:0 6px 14px rgba(0,0,0,0.06);transition:transform .12s}
+  .fav-btn.active{color:#e24b6a;transform:scale(1.08)}
+
+  /* Popover favorites panel */
+  .favorites-panel{position:fixed;top:80px;right:20px;width:320px;max-height:70vh;overflow:auto;background:#f9f9f8;border-radius:12px;box-shadow:0 18px 40px rgba(0,0,0,0.12);padding:14px;display:none;z-index:1500}
+  .favorites-panel h4{margin-bottom:10px;color:#446b5c}
+  .fav-list{display:flex;flex-direction:column;gap:10px}
+  .fav-item{display:flex;gap:10px;align-items:center;background:#fff;padding:8px;border-radius:8px;box-shadow:0 6px 12px rgba(0,0,0,0.05)}
+  .fav-item img{width:72px;height:56px;object-fit:cover;border-radius:6px}
+  .fav-item .t{font-size:0.95rem;color:#37423d}
+
+  /* Detail modal */
+  .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.45);z-index:2000;opacity:0;pointer-events:none;transition:opacity .18s}
+  .modal.open{opacity:1;pointer-events:auto}
+  .modal-card{background:#fff;border-radius:12px;width:90%;max-width:900px;max-height:92vh;overflow:auto;box-shadow:0 30px 60px rgba(0,0,0,0.2)}
+  .modal-body{display:grid;grid-template-columns:1fr 360px;gap:18px;padding:18px}
+  .modal-body img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+  .modal-main{padding:6px 0}
+  .modal-main h2{color:#446b5c;margin-bottom:8px}
+  .modal-main h3{color:#37423d;margin-top:12px;margin-bottom:6px}
+  .modal-main ul{padding-left:18px;margin-bottom:8px}
+  .modal-side{background:#f5f5f2;padding:12px;border-radius:8px}
+  .close-btn{position:absolute;top:10px;right:12px;background:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer}
+
+  /* responsive modal */
+  @media(max-width:900px){
+    .modal-body{grid-template-columns:1fr;max-height:88vh}
+    .modal-side{order:2}
+  }
+
+  /* Popular / filter labels */
+  .section-title{display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px}
+  .section-title h2{color:#446b5c}
+
+  footer{margin-top:36px;background:#37423d;color:#dce1dc;padding:18px;text-align:center;border-radius:8px;margin-left:40px;margin-right:40px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🥗 BISK-it</div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="recipe.html" class="active">Recipes</a>
+    <a href="upload.html">Upload</a>
+    <a href="community.html">Community</a>
+    <a class="btn" href="login.html">Login</a>
+  </nav>
+</header>
+
+<main>
+  <div class="top-intro">
+    <h1>Discover Recipes — Veg-forward, desserts & drinks included</h1>
+    <p>Search, filter by cuisine, toggle Veg / Non-Veg, and save favorites ❤️</p>
+  </div>
+
+  <div class="controls">
+    <div class="search-bar">
+      <input id="searchInput" placeholder="Search recipes (title) — try 'biryani', 'pasta', 'smoothie'..." />
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div class="preference" title="Toggle Veg / Non-Veg">
+      <input type="radio" id="prefAll" name="pref" checked><label for="prefAll">All</label>
+      <input type="radio" id="prefVeg" name="pref"><label for="prefVeg">🌿 Veg</label>
+      <input type="radio" id="prefNon" name="pref"><label for="prefNon">🍗 Non-Veg</label>
+    </div>
+
+    <button id="favoritesToggle" class="fav-toggle">❤️ Favorites (<span id="favCount">0</span>)</button>
+  </div>
+
+  <div class="cuisine-filter" id="cuisineFilter">
+    <!-- buttons injected dynamically -->
+  </div>
+
+  <div class="section-title">
+    <h2>All Recipes</h2>
+    <div style="color:#829383;font-size:0.95rem">Showing <span id="visibleCount">0</span> recipes</div>
+  </div>
+
+  <div class="recipe-grid" id="recipeGrid">
+    <!-- recipes injected dynamically -->
+  </div>
+
+  <div class="section-title" style="margin-top:34px">
+    <h2>Most Popular (Quick Picks)</h2>
+    <div style="color:#829383;font-size:0.95rem">Top bites across categories</div>
+  </div>
+
+  <div class="recipe-grid" id="popularGrid" style="margin-top:10px">
+    <!-- popular picks injected dynamically -->
+  </div>
+
+  <!-- Favorites floating panel -->
+  <div class="favorites-panel" id="favoritesPanel">
+    <h4>Your Favorites</h4>
+    <div class="fav-list" id="favList"></div>
+  </div>
+
+</main>
+
+<footer>© 2025 BISK-it | Developed by Team GLA</footer>
+
+<!-- Detail modal -->
+<div class="modal" id="detailModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <button class="close-btn" id="closeModal">Close ✕</button>
+    <div class="modal-body">
+      <div class="modal-left">
+        <img id="modalImage" src="" alt="recipe image">
+      </div>
+      <div class="modal-main">
+        <h2 id="modalTitle">Recipe Title</h2>
+        <div class="meta" id="modalMeta">Cuisine • Veg/Non-veg</div>
+
+        <h3>Ingredients</h3>
+        <ul id="modalIngredients"></ul>
+
+        <h3>Instructions</h3>
+        <div id="modalInstructions" style="color:#55625d;line-height:1.5"></div>
+      </div>
+      <aside class="modal-side" id="modalSide">
+        <strong>Quick info</strong>
+        <p id="modalSideText" style="color:#55625d;margin-top:8px">Estimated time • Difficulty</p>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================
+  DATA: recipes array
+  We'll include ~20 items per cuisine group.
+  Each object: id, title, cuisine, veg (boolean), image, popular(boolean), ingredients(array), instructions(string)
+  NOTE: Images use source.unsplash with query strings and a sig to get varied photos.
+============================ */
+
+const recipes = [
+  /* ========== INDIAN (20) — more veg than nonveg ========== */
+  {id:'ind-1', title:'Veg Biryani', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1621996346565-607e9946f6e1?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Basmati rice','Mixed vegetables','Spices','Ghee','Saffron'], instructions:'Soak rice. Cook vegetables with spices. Layer rice and veg, steam with saffron.'},
+  {id:'ind-2', title:'Paneer Butter Masala', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1626135048911-66f0cf4ed4a5?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Paneer','Tomato', 'Cream','Butter','Garam masala'], instructions:'Sauté tomato-onion masala, add cream and paneer. Simmer and serve.'},
+  {id:'ind-3', title:'Chana Masala', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1597102435343-3d3f1b8b6b22?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Chickpeas','Tomatoes','Onion','Spices'], instructions:'Cook chickpeas. Prepare masala and simmer with spices.'},
+  {id:'ind-4', title:'Aloo Gobi', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1604908177522-4d6f8c2eb2f5?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Potato','Cauliflower','Turmeric','Spices'], instructions:'Roast potatoes and cauliflower with spices until tender.'},
+  {id:'ind-5', title:'Masala Dosa', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1589308078052-279f1e29b176?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Dosa batter','Potato masala','Chutney'], instructions:'Spread batter thin, fill with spiced potato, fold and serve.'},
+  {id:'ind-6', title:'Palak Paneer', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1608758382191-61b17a41fef6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Spinach','Paneer','Garlic','Spices'], instructions:'Blanch spinach, blend, cook with paneer and spices.'},
+  {id:'ind-7', title:'Rogan Josh (Non-Veg)', cuisine:'Indian', veg:false, image:'https://images.unsplash.com/photo-1604908177523-bba5d8e1a4e7?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Mutton','Yogurt','Spices'], instructions:'Cook mutton with yogurt and spices slowly until tender.'},
+  {id:'ind-8', title:'Tandoori Chicken', cuisine:'Indian', veg:false, image:'https://images.unsplash.com/photo-1623914043272-ae39a0b1a8e2?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Chicken','Yogurt','Tandoori masala'], instructions:'Marinate chicken and roast/grill until charred and cooked.'},
+  {id:'ind-9', title:'Dal Tadka', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1604908177520-86c9b9b8f2c1?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Lentils','Ghee','Cumin','Garlic'], instructions:'Cook dal then temper with ghee, garlic and spices.'},
+  {id:'ind-10', title:'Matar Paneer', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1604908177525-4f6df0b2a77b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Paneer','Green peas','Tomato gravy'], instructions:'Cook peas in tomato gravy and add paneer cubes.'},
+  {id:'ind-11', title:'Veg Kofta', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1598032895078-1c23b6f7b3e8?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Vegetable koftas','Creamy gravy'], instructions:'Make koftas and serve in rich gravy.'},
+  {id:'ind-12', title:'Chicken Chettinad', cuisine:'Indian', veg:false, image:'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Chicken','Chettinad masala'], instructions:'Cook chicken with freshly ground Chettinad spices.'},
+  {id:'ind-13', title:'Dum Aloo', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1591180816118-1c5b5b2d5d50?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Potatoes','Tomato-onion gravy','Spices'], instructions:'Fry potatoes then simmer in gravy on low heat.'},
+  {id:'ind-14', title:'Raita', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1548946526-f69e2424cf45?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Yogurt','Cucumber','Spices'], instructions:'Mix chopped veggies into yogurt, season and serve chilled.'},
+  {id:'ind-15', title:'Pav Bhaji', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Mixed veg mash','Pav buns','Butter','Spices'], instructions:'Cook mashed veggies with spices and serve with buttered pav.'},
+  {id:'ind-16', title:'Kadai Paneer', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1604908177521-7a3f7f8f8e49?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Paneer','Bell peppers','Kadai masala'], instructions:'Toss paneer and peppers in kadai masala.'},
+  {id:'ind-17', title:'Fish Curry (Non-Veg)', cuisine:'Indian', veg:false, image:'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Fish','Coconut','Tamarind','Spices'], instructions:'Cook fish pieces in tangy coconut-tamarind gravy.'},
+  {id:'ind-18', title:'Samosa', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1575936123452-b67c3203c357?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Potato filling','Pastry shells','Spices'], instructions:'Fill pastry with spiced potato and deep fry.'},
+  {id:'ind-19', title:'Lassi (Drink)', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Yogurt','Sugar','Cardamom'], instructions:'Blend yogurt with sugar and serve chilled.'},
+  {id:'ind-20', title:'Gulab Jamun (Dessert)', cuisine:'Indian', veg:true, image:'https://images.unsplash.com/photo-1599785209793-7d6f47f7a3d6?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Khoya','Sugar syrup'], instructions:'Fry milk-based dough balls and soak in sugar syrup.'},
+
+  /* ========== ITALIAN (20) ========== */
+  {id:'ita-1', title:'Margherita Pizza', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1548365328-9b7f9f5f1a2b?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Pizza dough','Tomato','Mozzarella','Basil'], instructions:'Top dough with tomato and cheese and bake until golden.'},
+  {id:'ita-2', title:'Veg Alfredo Pasta', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Pasta','Cream','Parmesan','Veggies'], instructions:'Cook pasta and toss with creamy Alfredo sauce.'},
+  {id:'ita-3', title:'Spaghetti Pomodoro', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1523986371872-9d3ba2e2f642?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Spaghetti','Tomato sauce','Garlic'], instructions:'Cook spaghetti and toss in fresh tomato sauce.'},
+  {id:'ita-4', title:'Caprese Salad', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tomatoes','Mozzarella','Basil'], instructions:'Layer and drizzle with olive oil and balsamic.'},
+  {id:'ita-5', title:'Pesto Pasta', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1481931715705-36f5a8d2f0f5?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Pasta','Basil','Pine nuts','Olive oil'], instructions:'Toss pasta with freshly made pesto.'},
+  {id:'ita-6', title:'Mushroom Risotto', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1529698097229-4b7d5a3f5a0e?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Arborio rice','Mushrooms','Stock'], instructions:'Cook rice slowly adding stock until creamy.'},
+  {id:'ita-7', title:'Bruschetta', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1496412705862-e0088f16f791?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Toasted bread','Tomato','Basil'], instructions:'Top toasted bread with tomato mixture.'},
+  {id:'ita-8', title:'Chicken Parmigiana', cuisine:'Italian', veg:false, image:'https://images.unsplash.com/photo-1604908177528-51f9b6e8a5c6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Chicken','Tomato sauce','Cheese'], instructions:'Bread chicken, top with sauce and cheese, bake.'},
+  {id:'ita-9', title:'Gnocchi with Tomato', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1543352634-8f7fb6096f4f?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Gnocchi','Tomato sauce'], instructions:'Cook gnocchi and serve with light tomato sauce.'},
+  {id:'ita-10', title:'Tiramisu (Dessert)', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1521302080600-87f3b0f4a3a0?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Mascarpone','Coffee','Ladyfingers'], instructions:'Layer coffee-soaked biscuits and mascarpone cream.'},
+  {id:'ita-11', title:'Focaccia Bread', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1544025162-1a0b3bfc2ae6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Flour','Olive oil','Rosemary'], instructions:'Bake dough with olive oil and rosemary.'},
+  {id:'ita-12', title:'Panzanella', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Stale bread','Tomato','Cucumber','Onion'], instructions:'Toss bread and veggies in vinaigrette.'},
+  {id:'ita-13', title:'Ravioli with Ricotta', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1528716321681-5aefa0a8b6a7?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Ravioli','Ricotta','Sauce'], instructions:'Cook ravioli and toss with sauce.'},
+  {id:'ita-14', title:'Seafood Linguine', cuisine:'Italian', veg:false, image:'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Linguine','Mixed seafood','Tomato or white sauce'], instructions:'Cook pasta and combine with seafood.'},
+  {id:'ita-15', title:'Polenta with Mushrooms', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Polenta','Mushrooms','Cheese'], instructions:'Serve creamy polenta topped with sautéed mushrooms.'},
+  {id:'ita-16', title:'Capellini with Pesto', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Capellini','Pesto'], instructions:'Toss capellini with fresh pesto.'},
+  {id:'ita-17', title:'Ciabatta Sandwich', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1540452595-abe99b0ddd33?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Ciabatta','Veg fillings','Sauce'], instructions:'Assemble sandwich and toast lightly.'},
+  {id:'ita-18', title:'Affogato (Beverage/Dessert)', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1532634896-26909d0d2a2f?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Ice cream','Espresso'], instructions:'Pour hot espresso over gelato.'},
+  {id:'ita-19', title:'Eggplant Parm (Non-Veg? Veg-friendly)', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1597308555883-9a80b1d3b8bd?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Eggplant','Tomato sauce','Cheese'], instructions:'Bread eggplant, layer with sauce and bake.'},
+  {id:'ita-20', title:'Lemon Sorbet', cuisine:'Italian', veg:true, image:'https://images.unsplash.com/photo-1505250469679-203ad9ced0cb?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Lemon','Sugar','Water'], instructions:'Freeze and churn into sorbet.'},
+
+  /* ========== MEXICAN (20) ========== */
+  {id:'mex-1', title:'Veg Quesadilla', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1541542684-0e7f7a6a6b2e?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tortilla','Cheese','Veggies'], instructions:'Stuff tortilla and cook until crispy.'},
+  {id:'mex-2', title:'Chicken Tacos', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1606755962773-0b7c0d4f73cf?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Tortillas','Chicken','Salsa'], instructions:'Fill tortillas with seasoned chicken and salsa.'},
+  {id:'mex-3', title:'Veg Burrito', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1552332386-f8dd00dc2f1b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tortilla','Rice','Beans','Veggies'], instructions:'Wrap fillings tightly and serve.'},
+  {id:'mex-4', title:'Chiles Rellenos', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1604908177529-8f2a3b1b9a9b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Poblano peppers','Cheese','Batter'], instructions:'Stuff peppers with cheese, batter and fry.'},
+  {id:'mex-5', title:'Guacamole', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1543353071-087092ec393a?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Avocado','Onion','Lime','Coriander'], instructions:'Mash avocado and mix with aromatics.'},
+  {id:'mex-6', title:'Beef Enchiladas', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1604908177524-324b6f8b6f2a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tortillas','Beef','Sauce'], instructions:'Roll beef in tortillas and bake with sauce.'},
+  {id:'mex-7', title:'Veg Fajitas', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1604908177526-6e3d8c9b7b3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Bell peppers','Onion','Tortillas'], instructions:'Sauté peppers and serve hot.'},
+  {id:'mex-8', title:'Fish Tostadas', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1606755962777-3a3a7d3b2f6c?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tostadas','Fish','Salsa'], instructions:'Top tostadas with flaky fish and toppings.'},
+  {id:'mex-9', title:'Street Corn (Elote)', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1565299624946-28f40a0ae38?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Corn','Mayo/cheese','Chili powder'], instructions:'Grill corn and coat with toppings.'},
+  {id:'mex-10', title:'Chilaquiles', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1601050691195-1f4e3f7d9d2f?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tortilla chips','Salsa','Eggs'], instructions:'Simmer chips in salsa and top with eggs.'},
+  {id:'mex-11', title:'Mango Salsa', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1524594154906-0757b9a0c0b7?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Mango','Onion','Chili'], instructions:'Mix diced mango with aromatics.'},
+  {id:'mex-12', title:'Carne Asada', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1606755962779-8d3a8f7d8a7e?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Skirt steak','Citrus marinade'], instructions:'Grill marinated steak to preference.'},
+  {id:'mex-13', title:'Veg Nachos', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1604908177527-0a1b9d7c2a3e?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tortilla chips','Cheese','Veggies'], instructions:'Layer nachos and bake until cheese melts.'},
+  {id:'mex-14', title:'Pozole', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1604908177522-7c1a2e8b7f4a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Hominy','Pork or chicken','Broth'], instructions:'Simmer hominy with meat and broth.'},
+  {id:'mex-15', title:'Salsa Verde', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1604908177519-8e6a9a3b2b2c?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tomatillo','Chili','Coriander'], instructions:'Blend and season.'},
+  {id:'mex-16', title:'Tamales', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1606755962775-4d3b5f7b8f3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Masa','Filling','Corn husks'], instructions:'Wrap fillings in masa and steam.'},
+  {id:'mex-17', title:'Black Bean Soup', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1606755962776-1d2b6f7b8c3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Black beans','Onion','Garlic'], instructions:'Simmer beans and blend to desired texture.'},
+  {id:'mex-18', title:'Ceviche (Seafood)', cuisine:'Mexican', veg:false, image:'https://images.unsplash.com/photo-1606755962780-2d3a9b7c6c3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Fish','Citrus','Onion'], instructions:'Cure fish in citrus and toss with aromatics.'},
+  {id:'mex-19', title:'Churros (Dessert)', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1606755962781-3f2b7c5a4d3b?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Fried dough','Sugar','Cinnamon'], instructions:'Pipe dough, fry and roll in sugar-cinnamon.'},
+  {id:'mex-20', title:'Horchata (Drink)', cuisine:'Mexican', veg:true, image:'https://images.unsplash.com/photo-1606755962782-4f2b8a4d3e3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Rice','Cinnamon','Sugar'], instructions:'Blend soaked rice, strain and sweeten.'},
+
+  /* ========== CHINESE (20) ========== */
+  {id:'chi-1', title:'Veg Hakka Noodles', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Noodles','Mixed veggies','Soy sauce'], instructions:'Stir fry noodles with veggies and sauces.'},
+  {id:'chi-2', title:'Veg Fried Rice', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962774-5b3d8f7a4c3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Rice','Eggs? (omit for veg)','Veggies'], instructions:'Stir fry rice with vegetables and seasonings.'},
+  {id:'chi-3', title:'Manchurian (Veg)', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962783-6b2a9a4d5e3b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Vegetable balls','Tangy sauce'], instructions:'Fry veg balls and toss in Manchurian sauce.'},
+  {id:'chi-4', title:'Sweet & Sour Chicken', cuisine:'Chinese', veg:false, image:'https://images.unsplash.com/photo-1606755962784-7b3b9a6d8e3b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Chicken','Sweet-sour sauce'], instructions:'Fry chicken and coat in sweet and sour sauce.'},
+  {id:'chi-5', title:'Veg Spring Rolls', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962785-8c3b8a4f9a3b?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Spring roll wrappers','Veggie filling'], instructions:'Fill wrappers and deep fry until crisp.'},
+  {id:'chi-6', title:'Mapo Tofu (Veg-adapted)', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962786-9d3a7b6c3a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tofu','Fermented bean paste','Chili'], instructions:'Cook tofu in rich spicy sauce.'},
+  {id:'chi-7', title:'Chow Mein', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962787-0a4b8b2d6a3b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Noodles','Veggies','Soy'], instructions:'Stir fry noodles with veggies and sauce.'},
+  {id:'chi-8', title:'Peking Duck', cuisine:'Chinese', veg:false, image:'https://images.unsplash.com/photo-1606755962788-1b3b8c4d5c3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Duck','Pancakes','Sauce'], instructions:'Roast duck and serve with pancakes.'},
+  {id:'chi-9', title:'Hot & Sour Soup', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962789-2c3b7c4b5b3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tofu','Mushrooms','Vinegar'], instructions:'Simmer ingredients in tangy broth.'},
+  {id:'chi-10', title:'Schezwan Noodles', cuisine:'Chinese', veg:false, image:'https://images.unsplash.com/photo-1606755962790-3d3b6a2c7b3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Noodles','Chili sauce','Veg/protein'], instructions:'Toss noodles with Schezwan spicy sauce.'},
+  {id:'chi-11', title:'Dim Sum (Veg options)', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962791-4e3b5b2a6a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Dumpling wrappers','Veg filling'], instructions:'Steam prepared dumplings until cooked.'},
+  {id:'chi-12', title:'Kung Pao Chicken', cuisine:'Chinese', veg:false, image:'https://images.unsplash.com/photo-1606755962792-5f3b4c1b5b3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Chicken','Peanuts','Chili peppers'], instructions:'Stir fry chicken with peanuts in spicy sauce.'},
+  {id:'chi-13', title:'Egg Fried Rice', cuisine:'Chinese', veg:false, image:'https://images.unsplash.com/photo-1606755962793-6g3b3d0a4a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Rice','Eggs','Soy sauce'], instructions:'Stir fry rice with eggs and seasoning.'},
+  {id:'chi-14', title:'Vegetable Lo Mein', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962794-7h3b2f9b3a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Lo mein noodles','Veggies'], instructions:'Stir fry noodles and mix with sauce.'},
+  {id:'chi-15', title:'Sesame Tofu', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962795-8i3b1a8c2a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tofu','Sesame sauce'], instructions:'Pan-fry tofu and glaze with sesame sauce.'},
+  {id:'chi-16', title:'Moo Shu Pork', cuisine:'Chinese', veg:false, image:'https://images.unsplash.com/photo-1606755962796-9j3b0a7d1a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Pork','Veggies','Pancakes'], instructions:'Stir fry and serve with pancakes.'},
+  {id:'chi-17', title:'Cantonese Roast Pork', cuisine:'Chinese', veg:false, image:'https://images.unsplash.com/photo-1606755962797-0k3b9b6f0a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Pork','Honey glaze'], instructions:'Roast pork with sweet glaze.'},
+  {id:'chi-18', title:'Tofu & Broccoli Stir Fry', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962798-1l3b8b5e0a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tofu','Broccoli','Garlic'], instructions:'Stir fry quickly on high heat.'},
+  {id:'chi-19', title:'Crispy Spring Rolls', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1606755962799-2m3b7b4d0a3a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Wrappers','Veg filling'], instructions:'Fill and fry until golden.'},
+  {id:'chi-20', title:'Jasmine Tea (Beverage)', cuisine:'Chinese', veg:true, image:'https://images.unsplash.com/photo-1547514701-9c4e0d7a1b2d?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Jasmine tea leaves','Water'], instructions:'Brew tea leaves at proper temp.'},
+
+  /* ========== DESSERTS (20) ========== mostly veg (desserts usually veg) ========== */
+  {id:'des-1', title:'Chocolate Lava Cake', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1606813902913-0d9e23e0a253?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Dark chocolate','Butter','Eggs','Flour'], instructions:'Bake until edges set and center molten.'},
+  {id:'des-2', title:'Cheesecake', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1544025162-1a0b3bfc2ae6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Cream cheese','Biscuits','Sugar'], instructions:'Bake cheesecake and chill before serving.'},
+  {id:'des-3', title:'Brownies', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1601312379989-ae3d3e8d8a6b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Chocolate','Butter','Sugar','Flour'], instructions:'Bake mixture until fudgy.'},
+  {id:'des-4', title:'Panna Cotta', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1526045612212-70caf35c14df?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Cream','Gelatin','Vanilla'], instructions:'Set cream mixture with gelatin and chill.'},
+  {id:'des-5', title:'Apple Pie', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1512058564366-c9e3f6dca1f8?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Apples','Pastry','Sugar','Cinnamon'], instructions:'Fill pastry with spiced apples and bake.'},
+  {id:'des-6', title:'Banana Bread', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Bananas','Flour','Sugar'], instructions:'Mash bananas and bake batter.'},
+  {id:'des-7', title:'Rasgulla (Indian)', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1599785209793-7d6f47f7a3d6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Paneer','Sugar syrup'], instructions:'Make balls from paneer and soak in syrup.'},
+  {id:'des-8', title:'Tiramisu', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1521302080600-87f3b0f4a3a0?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Mascarpone','Coffee','Ladyfingers'], instructions:'Layer coffee-soaked biscuits and cream.'},
+  {id:'des-9', title:'Crème Brûlée', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1599785209791-6f4a4f2e2b4a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Custard','Sugar crust'], instructions:'Bake custard and torch sugar on top.'},
+  {id:'des-10', title:'Kulfi (Indian)', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Milk','Sugar','Pistachio'], instructions:'Freeze thickened milk to set.'},
+  {id:'des-11', title:'Crepes', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1505250469679-203ad9ced0cb?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Batter','Fillings'], instructions:'Cook thin crepes and fill as desired.'},
+  {id:'des-12', title:'Shortbread', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1541167760496-1628856ab772?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Butter','Flour','Sugar'], instructions:'Bake buttery shortbread.'},
+  {id:'des-13', title:'Baklava', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1488161628813-04466f872be2?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Phyllo','Nuts','Honey syrup'], instructions:'Layer phyllo with nuts and bake, soak in syrup.'},
+  {id:'des-14', title:'Pavlova', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Meringue','Whipped cream','Fruit'], instructions:'Bake meringue and top with cream & fruit.'},
+  {id:'des-15', title:'Gajar Halwa', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1606755962791-4e3b5b2a6a3a?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Carrot','Milk','Ghee','Sugar'], instructions:'Slow-cook carrots in milk and ghee.'},
+  {id:'des-16', title:'Pecan Pie', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1601312379989-ae3d3e8d8a6b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Pecans','Syrup','Pastry'], instructions:'Bake pecan filling in crust.'},
+  {id:'des-17', title:'Mango Cheesecake', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1617191516854-2f9b5a3a6f2a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Mango','Cream cheese','Crust'], instructions:'Layer mango puree over cheesecake.'},
+  {id:'des-18', title:'Donuts', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1562440499-64cde4d8b1a6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Dough','Glaze'], instructions:'Fry rings and glaze.'},
+  {id:'des-19', title:'Rasmalai', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1601312379987-6a3d3f8d9a2a?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Paneer balls','Sweet milk'], instructions:'Soak paneer balls in sweetened milk.'},
+  {id:'des-20', title:'Ice Cream Sundae', cuisine:'Desserts', veg:true, image:'https://images.unsplash.com/photo-1551024709-8f23befc6e8b?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Ice cream','Toppings'], instructions:'Assemble scoops with toppings.'},
+
+  /* ========== BEVERAGES (20) ========== mostly veg */
+  {id:'bev-1', title:'Avocado Smoothie', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1524594154906-0757b9a0c0b7?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Avocado','Milk or plant milk','Sweetener'], instructions:'Blend until smooth and chilled.'},
+  {id:'bev-2', title:'Cold Brew Coffee', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Coffee grounds','Cold water'], instructions:'Steep coffee in cold water overnight and strain.'},
+  {id:'bev-3', title:'Mango Lassi', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=800&q=80', popular:true,
+    ingredients:['Mango','Yogurt','Sugar'], instructions:'Blend and serve chilled.'},
+  {id:'bev-4', title:'Masala Chai', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tea leaves','Spices','Milk'], instructions:'Boil tea with spices and milk.'},
+  {id:'bev-5', title:'Lemonade', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1505575967452-6a8b0a0b94a6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Lemon','Sugar','Water'], instructions:'Mix lemon juice and sugar into water and chill.'},
+  {id:'bev-6', title:'Matcha Latte', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1470337458703-46ad1756a187?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Matcha powder','Milk'], instructions:'Whisk matcha with hot water and add milk.'},
+  {id:'bev-7', title:'Mojito (Mocktail)', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Mint','Lime','Soda','Sugar'], instructions:'Muddle mint and lime, top with soda.'},
+  {id:'bev-8', title:'Pumpkin Spice Latte', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Espresso','Pumpkin spice','Milk'], instructions:'Mix with steamed milk and spices.'},
+  {id:'bev-9', title:'Iced Tea with Peach', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1505577058444-a3dabf7d596d?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Tea','Peach syrup','Ice'], instructions:'Brew and cool with peach flavor.'},
+  {id:'bev-10', title:'Smoothie Bowl', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1506806732259-39c2d0268443?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Frozen fruit','Milk','Toppings'], instructions:'Blend thick and top with seeds and fruit.'},
+  {id:'bev-11', title:'Turmeric Latte', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1544025162-1a0b3bfc2ae6?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Turmeric','Milk','Honey'], instructions:'Heat milk with turmeric and sweeten.'},
+  {id:'bev-12', title:'Hot Chocolate', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Chocolate','Milk','Cream'], instructions:'Melt chocolate into milk and serve warm.'},
+  {id:'bev-13', title:'Orange Fizz', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1504215680853-026ed2a45def?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Orange juice','Soda'], instructions:'Mix and serve over ice.'},
+  {id:'bev-14', title:'Cucumber Cooler', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1542444459-db0f3b09a5c5?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Cucumber','Mint','Lime'], instructions:'Blend and strain for a refreshing cooler.'},
+  {id:'bev-15', title:'Iced Mocha', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Espresso','Chocolate','Milk','Ice'], instructions:'Combine and serve over ice.'},
+  {id:'bev-16', title:'Rose Milk', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Milk','Rose syrup'], instructions:'Mix syrup into chilled milk.'},
+  {id:'bev-17', title:'Cold Brew with Oat Milk', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Ground coffee','Oat milk'], instructions:'Steep coffee and serve with oat milk.'},
+  {id:'bev-18', title:'Berry Smoothie', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-15027507726-0b2a9a7f6c19?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Mixed berries','Yogurt/H2O','Honey'], instructions:'Blend until smooth.'},
+  {id:'bev-19', title:'Ginger Lemon Tea', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Ginger','Lemon','Hot water'], instructions:'Brew ginger and add lemon.'},
+  {id:'bev-20', title:'Coconut Water Cooler', cuisine:'Beverages', veg:true, image:'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=800&q=80', popular:false,
+    ingredients:['Coconut water','Ice','Mint'], instructions:'Serve chilled.'}
+]; // end recipes array
+
+/* ============================
+  Dynamic rendering and interactivity
+============================ */
+
+const cuisineList = Array.from(new Set(['All', ...recipes.map(r=>r.cuisine)]));
+
+const recipeGrid = document.getElementById('recipeGrid');
+const popularGrid = document.getElementById('popularGrid');
+const cuisineFilterEl = document.getElementById('cuisineFilter');
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const prefAll = document.getElementById('prefAll');
+const prefVeg = document.getElementById('prefVeg');
+const prefNon = document.getElementById('prefNon');
+const favoritesToggle = document.getElementById('favoritesToggle');
+const favoritesPanel = document.getElementById('favoritesPanel');
+const favList = document.getElementById('favList');
+const favCountEl = document.getElementById('favCount');
+const visibleCountEl = document.getElementById('visibleCount');
+
+let activeCuisine = 'All';
+let favorites = JSON.parse(localStorage.getItem('biskit_favs') || '[]'); // persist
+let filteredRecipes = [...recipes];
+
+/* Helper: create element with classes */
+function el(tag, cls){ const e=document.createElement(tag); if(cls) e.className=cls; return e; }
+
+/* Render cuisine buttons */
+function initCuisineButtons(){
+  cuisineFilterEl.innerHTML='';
+  cuisineList.forEach(c=>{
+    const btn = el('button','cuisine-btn');
+    btn.textContent=c;
+    if(c==='All') btn.classList.add('active');
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.cuisine-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCuisine = c;
+      applyFilters();
+    });
+    cuisineFilterEl.appendChild(btn);
+  });
+}
+
+/* Render recipe cards */
+function renderRecipes(list){
+  recipeGrid.innerHTML='';
+  visibleCountEl.textContent = list.length;
+  list.forEach(r=>{
+    const card = el('article','recipe-card');
+    // image
+    const img = el('img'); img.src = r.image; img.alt = r.title;
+    // body
+    const body = el('div','body');
+    const h3 = el('h3'); h3.textContent = r.title;
+    const p = el('p'); p.textContent = r.instructions.slice(0,120) + (r.instructions.length>120? '…':'');
+    const meta = el('div','meta'); meta.textContent = `${r.cuisine} • ${r.veg? 'Veg':'Non-Veg'}`;
+    body.appendChild(h3); body.appendChild(p); body.appendChild(meta);
+    // favorite button
+    const fav = el('button','fav-btn'); fav.innerHTML = favorites.find(f=>f.id===r.id)? '❤️':'♡';
+    if(favorites.find(f=>f.id===r.id)) fav.classList.add('active');
+    fav.title = 'Add to Favorites';
+    fav.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      toggleFavorite(r, fav);
+    });
+
+    // click opens details modal
+    card.addEventListener('click', ()=> openModal(r));
+
+    card.appendChild(img);
+    card.appendChild(body);
+    card.appendChild(fav);
+    recipeGrid.appendChild(card);
+  });
+}
+
+/* Render popular picks (simple: filter recipes with popular:true) */
+function renderPopular(){
+  popularGrid.innerHTML='';
+  const picks = recipes.filter(r=>r.popular).slice(0,12);
+  picks.forEach(r=>{
+    const card = el('article','recipe-card');
+    const img = el('img'); img.src=r.image; img.alt=r.title;
+    const body = el('div','body');
+    const h3 = el('h3'); h3.textContent=r.title;
+    const meta = el('div','meta'); meta.textContent=`${r.cuisine} • ${r.veg? 'Veg':'Non-Veg'}`;
+    body.appendChild(h3); body.appendChild(meta);
+    card.appendChild(img); card.appendChild(body);
+    card.addEventListener('click', ()=> openModal(r));
+    popularGrid.appendChild(card);
+  });
+}
+
+/* Apply filters: cuisine + pref + search */
+function applyFilters(){
+  const q = searchInput.value.trim().toLowerCase();
+  let pref = 'all';
+  if(prefVeg.checked) pref='veg';
+  if(prefNon.checked) pref='nonveg';
+
+  filteredRecipes = recipes.filter(r=>{
+    // cuisine
+    const cuisineOk = (activeCuisine==='All') || (r.cuisine.toLowerCase() === activeCuisine.toLowerCase());
+    // pref
+    const prefOk = (pref==='all') || (pref==='veg' && r.veg) || (pref==='nonveg' && !r.veg);
+    // search
+    const searchOk = !q || r.title.toLowerCase().includes(q);
+    return cuisineOk && prefOk && searchOk;
+  });
+
+  renderRecipes(filteredRecipes);
+  renderFavCount();
+}
+
+/* search handler */
+searchBtn.addEventListener('click', ()=> applyFilters());
+searchInput.addEventListener('keyup', (e)=> { if(e.key==='Enter') applyFilters(); });
+
+/* Favorites functions */
+function toggleFavorite(recipe, btnEl){
+  const exists = favorites.find(f=>f.id===recipe.id);
+  if(exists){
+    favorites = favorites.filter(f=>f.id!==recipe.id);
+    btnEl.classList.remove('active'); btnEl.innerHTML='♡';
+  } else {
+    favorites.push({id:recipe.id, title:recipe.title, image:recipe.image});
+    btnEl.classList.add('active'); btnEl.innerHTML='❤️';
+  }
+  localStorage.setItem('biskit_favs', JSON.stringify(favorites));
+  updateFavoritesPanel();
+  renderFavCount();
+}
+
+function updateFavoritesPanel(){
+  favList.innerHTML='';
+  if(favorites.length===0){
+    favList.innerHTML = '<div style="color:#55625d;padding:6px">No favorites yet — click the heart ♡ on any recipe to save it.</div>';
+    return;
+  }
+  favorites.forEach(f=>{
+    const item = el('div','fav-item');
+    const img = el('img'); img.src=f.image; img.alt=f.title;
+    const t = el('div','t'); t.textContent = f.title;
+    item.appendChild(img); item.appendChild(t);
+    item.addEventListener('click', ()=> {
+      // open recipe detail if found in recipes
+      const rec = recipes.find(r=>r.id===f.id);
+      if(rec) openModal(rec);
+    });
+    favList.appendChild(item);
+  });
+}
+
+/* Render favorites count */
+function renderFavCount(){
+  favCountEl.textContent = favorites.length;
+}
+
+/* Toggle favorites panel */
+document.getElementById('favoritesToggle').addEventListener('click', ()=>{
+  const panel = document.getElementById('favoritesPanel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  updateFavoritesPanel();
+});
+
+/* Modal detail */
+const modal = document.getElementById('detailModal');
+const modalImage = document.getElementById('modalImage');
+const modalTitle = document.getElementById('modalTitle');
+const modalIngredients = document.getElementById('modalIngredients');
+const modalInstructions = document.getElementById('modalInstructions');
+const modalMeta = document.getElementById('modalMeta');
+const closeModalBtn = document.getElementById('closeModal');
+
+function openModal(recipe){
+  modal.classList.add('open');
+  modalImage.src = recipe.image;
+  modalTitle.textContent = recipe.title;
+  modalMeta.textContent = `${recipe.cuisine} • ${recipe.veg? 'Veg':'Non-Veg'}`;
+  modalIngredients.innerHTML = '';
+  (recipe.ingredients || ['Ingredient list not available']).forEach(i=>{
+    const li = document.createElement('li'); li.textContent = i; modalIngredients.appendChild(li);
+  });
+  modalInstructions.textContent = recipe.instructions || 'Instructions not available';
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){ modal.classList.remove('open'); document.body.style.overflow = ''; }
+closeModalBtn.addEventListener('click', closeModal);
+modal.addEventListener('click', (e)=> { if(e.target===modal) closeModal(); });
+
+/* Popular grid initial fill and initial render */
+initCuisineButtons();
+renderPopular();
+applyFilters();
+
+/* initial favorites panel update */
+updateFavoritesPanel();
+renderFavCount();
+
+/* Make cuisine buttons clickable by name typed earlier - already init above */
+
+/* Utility: show recipe count */
+visibleCountEl.textContent = filteredRecipes.length;
+</script>
+</body>
+</html>
