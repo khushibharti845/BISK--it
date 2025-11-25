@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BISK-it | Login / Signup</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="logo">🥗 BISK-it</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="recipe.html">Recipes</a>
+      <a href="upload.html">Upload</a>
+      <a href="community.html">Community</a>
+      <a href="login.html" class="active btn">Login</a>
+    </nav>
+  </header>
+
+  <!-- Auth Section -->
+  <section class="auth-container">
+
+    <!-- LOGIN BOX -->
+    <div class="auth-box" id="loginBox">
+      <h2>Login</h2>
+      <input type="text" id="loginEmail" placeholder="Email or Username">
+      <input type="password" id="loginPassword" placeholder="Password">
+      <button id="loginBtn">Login</button>
+      <div class="switch">
+        Don’t have an account? <a href="#" onclick="showSignup()">Sign Up</a>
+      </div>
+    </div>
+
+    <!-- SIGNUP BOX -->
+    <div class="auth-box" id="signupBox">
+      <h2>Create an Account</h2>
+      <input type="text" id="signupName" placeholder="Full Name">
+      <input type="email" id="signupEmail" placeholder="Email">
+      <input type="password" id="signupPassword" placeholder="Create Password">
+      <input type="password" id="signupConfirmPassword" placeholder="Confirm Password">
+      <button id="signupBtn">Sign Up</button>
+      <div class="switch">
+        Already have an account? <a href="#" onclick="showLogin()">Login</a>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- External JS -->
+  <script src="login.js"></script>
+
+</body>
+</html>
