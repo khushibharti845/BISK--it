@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-
+// routes
 const authRoutes = require("./src/routes/auth");
 const recipeRoutes = require("./src/routes/recipes");
 const communityRoutes = require("./src/routes/communityRoutes");
@@ -11,15 +11,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ⭐ Serve your entire BISK--IT folder (frontend root)
+//  Served entire BISK-IT folder (frontend root).
 app.use(express.static(path.join(__dirname, "..")));
 
-// Load homepage correctly
+// Loaded Homepage Correctly
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "..", "index.html"));
 });
 
-// API routes
+//  API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/recipes", recipeRoutes);
 app.use("/api/community", communityRoutes);
