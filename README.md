@@ -2,3 +2,4 @@
 - Frontend structure: index.html, upload/, recipe/, login/, community/
 - API endpoints: GET /api/recipes, POST /api/recipes/upload, POST /api/auth/login
 - How to run locally: cd BACKEND && npm install && npm start
+- Frontend structure: index.html, upload/, recipe/, login/, community/
