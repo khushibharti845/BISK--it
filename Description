@@ -1,0 +1,21 @@
+BISK-IT — A Modern Recipe Sharing Web Platform
+BISK-IT is a full-stack recipe sharing website where users can explore dishes, upload their own recipes, and interact through a common cooking community. With a clean UI and functional backend support, BISK-IT makes discovering and sharing food enjoyable, simple, and interactive.
+🔹 Platform Pages & Their Purpose
+    Page	Purpose
+    Index Page (Home)	Welcomes users, introduces the platform & provides navigation to other sections.
+    Recipes Page	Displays all available recipes with images, descriptions & details for users to browse.
+    Upload Page	Allows users to add new recipes including ingredients, steps & cooking instructions.
+    Community Page	A space to view recipes posted by others — promoting engagement & sharing.
+    Login Page	Authenticates users so only registered members can upload and manage content.
+🔥 What BISK-IT Offers
+    A welcoming home screen to guide users into the experience
+    A recipes section featuring multiple dishes to browse and learn from
+    A recipe upload system that lets users contribute their own creations
+    A community-based layout where cooking enthusiasts connect
+    Login access to maintain a secure and personalized environment
+🎯 The Goal of BISK-IT
+    To build a collaborative hub where people:
+🍽️ Discover new dishes
+    📝 Learn from step-by-step recipes
+    👩‍🍳 Share their own cooking ideas
+    🤝 Connect through community and food
