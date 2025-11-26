@@ -1,6 +1,4 @@
-// ----------------------------------------------
-// Load Community Posts from Backend
-// ----------------------------------------------
+// Loading Community Posts from Backend
 async function loadPosts() {
   const postsContainer = document.getElementById("posts");
 
@@ -31,10 +29,7 @@ async function loadPosts() {
 }
 
 loadPosts();
-
-// ----------------------------------------------
-// Create a new community post
-// ----------------------------------------------
+// Created a new community post
 document.getElementById("joinBtn").addEventListener("click", async () => {
   const username = prompt("Enter your name:");
   const content = prompt("Write your post:");
@@ -55,7 +50,7 @@ document.getElementById("joinBtn").addEventListener("click", async () => {
 
     if (res.ok) {
       alert("Post added!");
-      loadPosts(); // refresh list
+      loadPosts(); // refreshing the  list
     } else {
       alert(data.error || "Failed to add post");
     }
