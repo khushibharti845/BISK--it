@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BISK-it | Upload Your Recipe</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="upload.css">
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">🥗 BISK-it</div>
+    <nav>
+      <a href="/index.html">Home</a>
+      <a href="/recipe/recipe.html">Recipes</a>
+      <a href="/upload/upload.html" class="active">Upload</a>
+      <a href="/community/community.html">Community</a>
+      <a href="/login/login.html" class="btn">Login</a>
+    </nav>
+  </header>
+
+  <!-- Upload Section -->
+  <section class="upload-container">
+    <h1>📤 Share Your Recipe</h1>
+    <form id="uploadForm">
+      <input type="text" id="title" placeholder="Recipe Title" required>
+      <input type="text" id="cuisine" placeholder="Cuisine Type (e.g., Italian, Indian)">
+      <textarea id="description" rows="3" placeholder="Short Description" required></textarea>
+
+      <textarea id="ingredients" rows="4" placeholder="Ingredients (comma separated)" required></textarea>
+      <textarea id="instructions" rows="4" placeholder="Instructions" required></textarea>
+      <input type="text" id="imageUrl" placeholder="Image URL">
+
+      <button type="submit">Submit Recipe</button>
+    </form>
+  </section>
+
+  <footer>
+    <p>© 2025 BISK-it | Developed by Team GLA</p>
+  </footer>
+
+  <!-- JS -->
+  <script src="upload.js"></script>
+</body>
+</html>

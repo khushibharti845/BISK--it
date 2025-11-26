@@ -1,0 +1,17 @@
+# Ignore backend dependencies
+BACKEND/node_modules/
+node_modules/
+
+# Ignore uploads
+uploads/
+BACKEND/uploads/
+
+# Ignore env files
+.env
+BACKEND/.env
+
+# Mac system files
+.DS_Store
+
+# Logs
+*.log

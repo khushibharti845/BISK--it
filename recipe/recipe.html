@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>BISK-it | Recipes (Dynamic)</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<!-- External CSS -->
+  <link rel="stylesheet" href="recipe.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">🥗 BISK-it</div>
+  <nav>
+    <a href="/index.html">Home</a>
+    <a href="/recipe/recipe.html" class="active">Recipes</a>
+    <a href="/upload/upload.html">Upload</a>
+    <a href="/community/community.html">Community</a>
+    <a class="btn" href="/login/login.html">Login</a>
+  </nav>
+</header>
+
+<main>
+  <div class="top-intro">
+    <h1>Discover Recipes — Veg-forward, desserts & drinks included</h1>
+    <p>Search, filter by cuisine, toggle Veg / Non-Veg, and save favorites ❤️</p>
+  </div>
+
+  <div class="controls">
+    <div class="search-bar">
+      <input id="searchInput" placeholder="Search recipes (title) — try 'biryani', 'pasta', 'smoothie'..." />
+      <button id="searchBtn">Search</button>
+    </div>
+
+    <div class="preference" title="Toggle Veg / Non-Veg">
+      <input type="radio" id="prefAll" name="pref" checked><label for="prefAll">All</label>
+      <input type="radio" id="prefVeg" name="pref"><label for="prefVeg">🌿 Veg</label>
+      <input type="radio" id="prefNon" name="pref"><label for="prefNon">🍗 Non-Veg</label>
+    </div>
+
+    <button id="favoritesToggle" class="fav-toggle">❤️ Favorites (<span id="favCount">0</span>)</button>
+  </div>
+
+  <div class="cuisine-filter" id="cuisineFilter">
+    <!-- buttons injected dynamically -->
+  </div>
+
+  <div class="section-title">
+    <h2>All Recipes</h2>
+    <div style="color:#829383;font-size:0.95rem">Showing <span id="visibleCount">0</span> recipes</div>
+  </div>
+
+  <div class="recipe-grid" id="recipeGrid">
+    <!-- recipes injected dynamically -->
+  </div>
+
+  <div class="section-title" style="margin-top:34px">
+    <h2>Most Popular (Quick Picks)</h2>
+    <div style="color:#829383;font-size:0.95rem">Top bites across categories</div>
+  </div>
+
+  <div class="recipe-grid" id="popularGrid" style="margin-top:10px">
+    <!-- popular picks injected dynamically -->
+  </div>
+
+  <!-- Favorites floating panel -->
+  <div class="favorites-panel" id="favoritesPanel">
+    <h4>Your Favorites</h4>
+    <div class="fav-list" id="favList"></div>
+  </div>
+
+</main>
+
+<footer>© 2025 BISK-it | Developed by Team GLA</footer>
+
+<!-- Detail modal -->
+<div class="modal" id="detailModal" aria-hidden="true">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <button class="close-btn" id="closeModal">Close ✕</button>
+    <div class="modal-body">
+      <div class="modal-left">
+        <img id="modalImage" src="" alt="recipe image">
+      </div>
+      <div class="modal-main">
+        <h2 id="modalTitle">Recipe Title</h2>
+        <div class="meta" id="modalMeta">Cuisine • Veg/Non-veg</div>
+
+        <h3>Ingredients</h3>
+        <ul id="modalIngredients"></ul>
+
+        <h3>Instructions</h3>
+        <div id="modalInstructions" style="color:#55625d;line-height:1.5"></div>
+      </div>
+      <aside class="modal-side" id="modalSide">
+        <strong>Quick info</strong>
+        <p id="modalSideText" style="color:#55625d;margin-top:8px">Estimated time • Difficulty</p>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================
+  DATA: recipes array
+  We'll include ~20 items per cuisine group.
+  Each object: id, title, cuisine, veg (boolean), image, popular(boolean), ingredients(array), instructions(string)
+  NOTE: Images use source.unsplash with query strings and a sig to get varied photos.
+============================ */
+// Backend recipes will be loaded here
+let recipes = [];
+
+// Fetch recipes from backend
+async function loadBackendRecipes() {
+  try {
+    const res = await fetch("http://localhost:4000/api/recipes");
+    const data = await res.json();
+
+    console.log("Backend recipes:", data);
+
+    // Convert backend data into the format your frontend expects
+    const backendRecipes = data.map(r => ({
+      id: r.id,
+      title: r.title,
+      cuisine: "General", // backend has no cuisine yet
+      veg: true, // default (you can improve later)
+      image: r.image || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80",
+
+      popular: false,
+      ingredients: r.ingredients.split(",").map(i => i.trim()),
+      instructions: r.steps
+    }));
+
+    // Merge backend + existing static ones (if you want)
+    recipes = backendRecipes; 
+
+    applyFilters(); 
+  } catch (err) {
+    console.error("Error loading recipes from backend:", err);
+  }
+}
+
+
+/* ============================
+  Dynamic rendering and interactivity
+============================ */
+
+const cuisineList = Array.from(new Set(['All', ...recipes.map(r=>r.cuisine)]));
+
+const recipeGrid = document.getElementById('recipeGrid');
+const popularGrid = document.getElementById('popularGrid');
+const cuisineFilterEl = document.getElementById('cuisineFilter');
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const prefAll = document.getElementById('prefAll');
+const prefVeg = document.getElementById('prefVeg');
+const prefNon = document.getElementById('prefNon');
+const favoritesToggle = document.getElementById('favoritesToggle');
+const favoritesPanel = document.getElementById('favoritesPanel');
+const favList = document.getElementById('favList');
+const favCountEl = document.getElementById('favCount');
+const visibleCountEl = document.getElementById('visibleCount');
+
+let activeCuisine = 'All';
+let favorites = JSON.parse(localStorage.getItem('biskit_favs') || '[]'); // persist
+let filteredRecipes = [...recipes];
+
+/* Helper: create element with classes */
+function el(tag, cls){ const e=document.createElement(tag); if(cls) e.className=cls; return e; }
+
+/* Render cuisine buttons */
+function initCuisineButtons(){
+  cuisineFilterEl.innerHTML='';
+  cuisineList.forEach(c=>{
+    const btn = el('button','cuisine-btn');
+    btn.textContent=c;
+    if(c==='All') btn.classList.add('active');
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.cuisine-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCuisine = c;
+      applyFilters();
+    });
+    cuisineFilterEl.appendChild(btn);
+  });
+}
+
+/* Render recipe cards */
+function renderRecipes(list){
+  recipeGrid.innerHTML='';
+  visibleCountEl.textContent = list.length;
+  list.forEach(r=>{
+    const card = el('article','recipe-card');
+    // image
+    const img = el('img'); img.src = r.image; img.alt = r.title;
+    // body
+    const body = el('div','body');
+    const h3 = el('h3'); h3.textContent = r.title;
+    const p = el('p'); p.textContent = r.instructions.slice(0,120) + (r.instructions.length>120? '…':'');
+    const meta = el('div','meta'); meta.textContent = `${r.cuisine} • ${r.veg? 'Veg':'Non-Veg'}`;
+    body.appendChild(h3); body.appendChild(p); body.appendChild(meta);
+    // favorite button
+    const fav = el('button','fav-btn'); fav.innerHTML = favorites.find(f=>f.id===r.id)? '❤️':'♡';
+    if(favorites.find(f=>f.id===r.id)) fav.classList.add('active');
+    fav.title = 'Add to Favorites';
+    fav.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      toggleFavorite(r, fav);
+    });
+
+    // click opens details modal
+    card.addEventListener('click', ()=> openModal(r));
+
+    card.appendChild(img);
+    card.appendChild(body);
+    card.appendChild(fav);
+    recipeGrid.appendChild(card);
+  });
+}
+
+/* Render popular picks (simple: filter recipes with popular:true) */
+function renderPopular(){
+  popularGrid.innerHTML='';
+  const picks = recipes.filter(r=>r.popular).slice(0,12);
+  picks.forEach(r=>{
+    const card = el('article','recipe-card');
+    const img = el('img'); img.src=r.image; img.alt=r.title;
+    const body = el('div','body');
+    const h3 = el('h3'); h3.textContent=r.title;
+    const meta = el('div','meta'); meta.textContent=`${r.cuisine} • ${r.veg? 'Veg':'Non-Veg'}`;
+    body.appendChild(h3); body.appendChild(meta);
+    card.appendChild(img); card.appendChild(body);
+    card.addEventListener('click', ()=> openModal(r));
+    popularGrid.appendChild(card);
+  });
+}
+
+/* Apply filters: cuisine + pref + search */
+function applyFilters(){
+  const q = searchInput.value.trim().toLowerCase();
+  let pref = 'all';
+  if(prefVeg.checked) pref='veg';
+  if(prefNon.checked) pref='nonveg';
+
+  filteredRecipes = recipes.filter(r=>{
+    // cuisine
+    const cuisineOk = (activeCuisine==='All') || (r.cuisine.toLowerCase() === activeCuisine.toLowerCase());
+    // pref
+    const prefOk = (pref==='all') || (pref==='veg' && r.veg) || (pref==='nonveg' && !r.veg);
+    // search
+    const searchOk = !q || r.title.toLowerCase().includes(q);
+    return cuisineOk && prefOk && searchOk;
+  });
+
+  renderRecipes(filteredRecipes);
+  renderFavCount();
+}
+
+/* search handler */
+searchBtn.addEventListener('click', ()=> applyFilters());
+searchInput.addEventListener('keyup', (e)=> { if(e.key==='Enter') applyFilters(); });
+
+/* Favorites functions */
+function toggleFavorite(recipe, btnEl){
+  const exists = favorites.find(f=>f.id===recipe.id);
+  if(exists){
+    favorites = favorites.filter(f=>f.id!==recipe.id);
+    btnEl.classList.remove('active'); btnEl.innerHTML='♡';
+  } else {
+    favorites.push({id:recipe.id, title:recipe.title, image:recipe.image});
+    btnEl.classList.add('active'); btnEl.innerHTML='❤️';
+  }
+  localStorage.setItem('biskit_favs', JSON.stringify(favorites));
+  updateFavoritesPanel();
+  renderFavCount();
+}
+
+function updateFavoritesPanel(){
+  favList.innerHTML='';
+  if(favorites.length===0){
+    favList.innerHTML = '<div style="color:#55625d;padding:6px">No favorites yet — click the heart ♡ on any recipe to save it.</div>';
+    return;
+  }
+  favorites.forEach(f=>{
+    const item = el('div','fav-item');
+    const img = el('img'); img.src=f.image; img.alt=f.title;
+    const t = el('div','t'); t.textContent = f.title;
+    item.appendChild(img); item.appendChild(t);
+    item.addEventListener('click', ()=> {
+      // open recipe detail if found in recipes
+      const rec = recipes.find(r=>r.id===f.id);
+      if(rec) openModal(rec);
+    });
+    favList.appendChild(item);
+  });
+}
+
+/* Render favorites count */
+function renderFavCount(){
+  favCountEl.textContent = favorites.length;
+}
+
+/* Toggle favorites panel */
+document.getElementById('favoritesToggle').addEventListener('click', ()=>{
+  const panel = document.getElementById('favoritesPanel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+  updateFavoritesPanel();
+});
+
+/* Modal detail */
+const modal = document.getElementById('detailModal');
+const modalImage = document.getElementById('modalImage');
+const modalTitle = document.getElementById('modalTitle');
+const modalIngredients = document.getElementById('modalIngredients');
+const modalInstructions = document.getElementById('modalInstructions');
+const modalMeta = document.getElementById('modalMeta');
+const closeModalBtn = document.getElementById('closeModal');
+
+function openModal(recipe){
+  modal.classList.add('open');
+  modalImage.src = recipe.image;
+  modalTitle.textContent = recipe.title;
+  modalMeta.textContent = `${recipe.cuisine} • ${recipe.veg? 'Veg':'Non-Veg'}`;
+  modalIngredients.innerHTML = '';
+  (recipe.ingredients || ['Ingredient list not available']).forEach(i=>{
+    const li = document.createElement('li'); li.textContent = i; modalIngredients.appendChild(li);
+  });
+  modalInstructions.textContent = recipe.instructions || 'Instructions not available';
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(){ modal.classList.remove('open'); document.body.style.overflow = ''; }
+closeModalBtn.addEventListener('click', closeModal);
+modal.addEventListener('click', (e)=> { if(e.target===modal) closeModal(); });
+
+/* Popular grid initial fill and initial render */
+(async () => {
+  initCuisineButtons();
+  renderPopular();
+  await loadBackendRecipes();
+})();
+
+
+/* initial favorites panel update */
+updateFavoritesPanel();
+renderFavCount();
+
+/* Make cuisine buttons clickable by name typed earlier - already init above */
+
+/* Utility: show recipe count */
+visibleCountEl.textContent = filteredRecipes.length;
+</script>
+
+ <!-- JS -->
+  <script src="upload.js"></script>
+</body>
+</html>

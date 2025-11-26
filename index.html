@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BISK-it | Recipe Sharing Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: #37423d;
+      line-height: 1.6;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(248, 247, 244, 0.9);
+      z-index: -1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 60px;
+      background: rgba(136, 160, 144, 0.9);
+      color: #f9f8f6;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      animation: fadeDown 1s ease;
+    }
+
+    @keyframes fadeDown {
+      from {opacity: 0; transform: translateY(-40px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    header .logo {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #f7f6f2;
+    }
+
+    nav a {
+      color: #f7f6f2;
+      text-decoration: none;
+      margin: 0 15px;
+      transition: 0.3s;
+      padding: 6px 10px;
+      border-radius: 20px;
+    }
+
+    nav a:hover {
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 0 10px rgba(255,255,255,0.3);
+    }
+
+    nav a.active {
+      background: #e6e4dd;
+      color: #37423d;
+    }
+
+    nav .btn {
+      background: #e6e4dd;
+      color: #446b5c;
+      padding: 8px 15px;
+      border-radius: 25px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    nav .btn:hover {
+      background: #f9f8f6;
+      box-shadow: 0 0 12px rgba(230,228,221,0.9);
+    }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(rgba(136,160,144,0.65), rgba(136,160,144,0.65)),
+        url("https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1600&q=80") center/cover;
+      color: #f7f6f2;
+      text-align: center;
+      padding: 140px 20px;
+      border-bottom: 4px solid #a8bca2;
+      animation: fadeIn 1.2s ease;
+    }
+
+    .hero h1 { font-size: 3rem; margin-bottom: 15px; }
+    .hero span { color: #e6e4dd; }
+    .hero p { font-size: 1.2rem; margin-bottom: 25px; }
+
+    .search-bar {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-bar input {
+      padding: 12px 20px;
+      width: 320px;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+      background: #ffffff;
+      color: #37423d;
+    }
+
+    .search-bar button {
+      background: #446b5c;
+      color: #f7f6f2;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .search-bar button:hover {
+      background: #5c8f7a;
+      box-shadow: 0 0 15px rgba(92,143,122,0.5);
+    }
+
+    /* Scroll animation base */
+    [data-animate] {
+      opacity: 0;
+      transform: translateY(50px);
+      animation: fadeUp 1s ease forwards;
+    }
+    [data-animate="1"] {animation-delay: 0.3s;}
+    [data-animate="2"] {animation-delay: 0.6s;}
+    [data-animate="3"] {animation-delay: 0.9s;}
+
+    @keyframes fadeUp { to {opacity: 1; transform: translateY(0);} }
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+
+    /* Recipes */
+    .recipes {
+      padding: 60px 80px;
+      text-align: center;
+    }
+
+    .recipes h2 {
+      font-size: 2rem;
+      color: #446b5c;
+      margin-bottom: 30px;
+    }
+
+    .recipe-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+    }
+
+    .recipe-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .recipe-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 0 15px rgba(136,160,144,0.5);
+    }
+
+    .recipe-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+
+    .recipe-card h3 {
+      margin: 15px 0 5px;
+      color: #446b5c;
+    }
+
+    .recipe-card p {
+      padding: 0 15px 20px;
+      color: #55625d;
+    }
+
+    /* Upload */
+    .upload {
+      padding: 70px 20px;
+      background: #f5f5f2;
+      text-align: center;
+      border-top: 2px solid #c9d3c0;
+    }
+
+    .upload h2 {
+      color: #446b5c;
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    .upload form {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: fadeUp 1s ease forwards;
+    }
+
+    .upload input,
+    .upload textarea {
+      width: 100%;
+      margin-bottom: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #cdd7cc;
+      outline: none;
+      background: #f9f9f8;
+    }
+
+    .upload button {
+      background: #446b5c;
+      color: #f7f6f2;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .upload button:hover {
+      background: #5c8f7a;
+      box-shadow: 0 0 15px rgba(92,143,122,0.5);
+    }
+
+    /* Community */
+    .community {
+      background: #a8bca2;
+      color: #f7f6f2;
+      text-align: center;
+      padding: 80px 20px;
+    }
+
+    .community h2 { font-size: 2rem; margin-bottom: 15px; }
+
+    .join-btn {
+      background: #f7f6f2;
+      color: #446b5c;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .join-btn:hover {
+      background: #e6e4dd;
+      box-shadow: 0 0 12px rgba(255,255,255,0.6);
+    }
+
+    /* Footer */
+    footer {
+      background: #37423d;
+      color: #dce1dc;
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    footer .social a {
+      color: #a8bca2;
+      text-decoration: none;
+      margin: 0 10px;
+      transition: 0.3s;
+    }
+
+    footer .social a:hover {
+      color: #f7f6f2;
+      text-shadow: 0 0 10px rgba(255,255,255,0.4);
+    }
+
+    /* Modals */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(55,66,61,0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal:target { display: flex; }
+
+    .modal-content {
+      background: #f9f9f8;
+      padding: 40px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 15px rgba(68,107,92,0.3);
+      animation: fadeIn 0.4s ease;
+    }
+
+    .modal-content h2 { color: #446b5c; margin-bottom: 20px; }
+
+    .modal-content input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 10px;
+      border: 1px solid #cdd7cc;
+      background: #fff;
+    }
+
+    .modal-content button {
+      background: #446b5c;
+      color: #f7f6f2;
+      border: none;
+      padding: 10px 25px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .modal-content button:hover {
+      background: #5c8f7a;
+      box-shadow: 0 0 12px rgba(92,143,122,0.6);
+    }
+
+    .close {
+      position: absolute;
+      top: 15px; right: 20px;
+      text-decoration: none;
+      color: #888;
+      font-size: 1.5rem;
+    }
+
+    .close:hover { color: #446b5c; }
+
+    @media (max-width: 768px) {
+      header { flex-direction: column; gap: 10px; padding: 15px 20px; }
+      .recipes { padding: 40px 20px; }
+      .hero h1 { font-size: 2rem; }
+      .search-bar input { width: 250px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🥗 BISK-it</div>
+    <nav>
+      <a href="/index.html" class="active">Home</a>
+      <a href="/recipe/recipe.html">Recipes</a>
+      <a href="/upload/upload.html">Upload</a>
+      <a href="/community/community.html">Community</a>
+      <a href="/login/login.html" class="btn">Login</a>
+      
+    </nav>
+  </header>
+
+  <section class="hero" id="home">
+    <div class="hero-text" data-animate="1">
+      <h1>Share, Discover & Cook with <span>BISK-it</span></h1>
+      <p>Fresh ideas, warm stories, and delicious inspiration every day.</p>
+      <div class="search-bar">
+        <input type="text" placeholder="Search recipes, ingredients or cuisines..." />
+        <button>Search</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="recipes" class="recipes" data-animate="2">
+    <h2>🍰 Featured Recipes</h2>
+    <div class="recipe-grid">
+      <div class="recipe-card"><img src="https://source.unsplash.com/400x300/?salad" alt="Recipe" /><h3>Green Goddess Salad</h3><p>Fresh, crisp, and full of herbs — light yet flavorful.</p></div>
+      <div class="recipe-card"><img src="https://source.unsplash.com/400x300/?pasta" alt="Recipe" /><h3>Spring Veggie Pasta</h3><p>A gentle blend of greens and lemon zest for a bright meal.</p></div>
+      <div class="recipe-card"><img src="https://source.unsplash.com/400x300/?smoothie" alt="Recipe" /><h3>Avocado Smoothie</h3><p>Creamy, healthy, and energizing with a tropical twist.</p></div>
+    </div>
+  </section>
+
+  <!-- <section id="upload" class="upload" data-animate="3"> -->
+    <!-- <h2>📤 Upload Your Recipe</h2>
+    <form>
+      <input type="text" placeholder="Recipe Title" required />
+      <input type="text" placeholder="Cuisine Type (e.g., Italian, Indian)" />
+      <textarea rows="4" placeholder="Ingredients (comma separated)" required></textarea>
+      <textarea rows="4" placeholder="Instructions" required></textarea>
+      <input type="file" accept="image/*" />
+      <button type="submit">Submit Recipe</button>
+    </form>
+  </section> -->
+
+  <section id="upload" class="upload" data-animate="3">
+  <h2>📤 Upload Your Recipe</h2>
+  <form action="recipe.html">
+      <input type="text" placeholder="Recipe Title" required />
+      <input type="text" placeholder="Cuisine Type (e.g., Italian, Indian)" />
+      <textarea rows="4" placeholder="Ingredients (comma separated)" required></textarea>
+      <textarea rows="4" placeholder="Instructions" required></textarea>
+      <input type="file" accept="image/*" />
+      <button type="submit">Submit Recipe</button>
+  </form>
+</section>
+
+
+  <!-- <section id="community" class="community" data-animate="2">
+    <h2>👩‍🍳 Join Our Cooking Community</h2>
+    <p>Share your culinary creativity, exchange ideas, and find inspiration.</p>
+    <a href="login.html" class="join-btn">Join Now</a>
+  </section> -->
+
+  <!-- Community Section -->
+<section id="community" class="community" data-animate="2">
+  <h2>👩‍🍳 Join Our Cooking Community</h2>
+  <p>Share your culinary creativity, exchange ideas, and find inspiration.</p>
+  <!-- Corrected Join Now button -->
+  <a href="login.html" class="join-btn">Join Now</a>
+</section>
+
+  <footer>
+    <p>© 2025 BISK-it | Developed by Team GLA</p>
+    <div class="social">
+      <a href="#">Instagram</a>
+      <a href="#">YouTube</a>
+      <a href="#">GitHub</a>
+    </div>
+  </footer>
+
+  <!-- Login Modal
+   
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <a href="#" class="close">&times;</a>
+      <h2>Login to BISK-it</h2>
+      <input type="text" placeholder="Username or Email" />
+      <input type="password" placeholder="Password" />
+      <button>Login</button>
+      <p style="margin-top:10px;">Don't have an account? <a href="#signup" style="color:#446b5c;">Sign Up</a></p>
+    </div>
+  </div>
+
+   Signup Modal 
+
+  <div id="signup" class="modal">
+    <div class="modal-content">
+      <a href="#" class="close">&times;</a>
+      <h2>Create Account</h2>
+      <input type="text" placeholder="Full Name" />
+      <input type="email" placeholder="Email" />
+      <input type="password" placeholder="Password" />
+      <button>Sign Up</button>
+      <p style="margin-top:10px;">Already have an account? <a href="#loginModal" style="color:#446b5c;">Login</a></p>
+    </div>
+  </div> -->
+
+  <!-- Scroll Highlight JS -->
+  <script>
+    const sections = document.querySelectorAll("section[id]");
+    const navLinks = document.querySelectorAll("header nav a");
+    window.addEventListener("scroll", () => {
+      let current = "";
+      sections.forEach(sec => {
+        const top = window.scrollY;
+        const offset = sec.offsetTop - 150;
+        const height = sec.offsetHeight;
+        if (top >= offset && top < offset + height) {
+          current = sec.getAttribute("id");
+        }
+      });
+      navLinks.forEach(link => {
+        link.classList.remove("active");
+        if (link.getAttribute("href").includes(current)) {
+          link.classList.add("active");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

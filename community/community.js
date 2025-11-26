@@ -1,0 +1,66 @@
+// ----------------------------------------------
+// Load Community Posts from Backend
+// ----------------------------------------------
+async function loadPosts() {
+  const postsContainer = document.getElementById("posts");
+
+  try {
+    const res = await fetch("http://localhost:4000/api/community");
+    const posts = await res.json();
+
+    if (!Array.isArray(posts)) {
+      postsContainer.innerHTML = "<p>Failed to load posts.</p>";
+      return;
+    }
+
+    postsContainer.innerHTML = posts
+      .map(
+        (p) => `
+        <div class="post-card">
+          <h3>${p.username}</h3>
+          <p>${p.content}</p>
+          <small>${new Date(p.created_at).toLocaleString()}</small>
+        </div>
+      `
+      )
+      .join("");
+  } catch (err) {
+    console.error(err);
+    postsContainer.innerHTML = "<p>Error loading posts.</p>";
+  }
+}
+
+loadPosts();
+
+// ----------------------------------------------
+// Create a new community post
+// ----------------------------------------------
+document.getElementById("joinBtn").addEventListener("click", async () => {
+  const username = prompt("Enter your name:");
+  const content = prompt("Write your post:");
+
+  if (!username || !content) {
+    alert("Both fields are required!");
+    return;
+  }
+
+  try {
+    const res = await fetch("http://localhost:4000/api/community", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, content }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Post added!");
+      loadPosts(); // refresh list
+    } else {
+      alert(data.error || "Failed to add post");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error creating post.");
+  }
+});
