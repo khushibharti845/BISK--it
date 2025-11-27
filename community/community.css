@@ -1,75 +1,60 @@
-/* Body and background */
-body {
-  font-family: "Poppins", sans-serif;
-  background: url('https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
-  background-size: cover;
-  color: #37423d;
-}
-body::before {
-  content: "";
-  position: fixed;
-  width: 100%; height: 100%;
-  background: rgba(248,247,244,0.9);
-  z-index: -1;
-  top: 0; left: 0;
+async function loadPosts() {
+  const postsContainer = document.getElementById("posts");
+
+  try {
+    const res = await fetch("http://localhost:4000/api/community");
+    const posts = await res.json();
+
+    if (!Array.isArray(posts)) {
+      postsContainer.innerHTML = "<p>Failed to load posts.</p>";
+      return;
+    }
+
+    postsContainer.innerHTML = posts
+      .map(
+        (p) => `
+        <div class="post-card">
+          <h3>${p.username}</h3>
+          <p>${p.content}</p>
+          <small>${new Date(p.created_at).toLocaleString()}</small>
+        </div>
+      `
+      )
+      .join("");
+  } catch (err) {
+    console.error(err);
+    postsContainer.innerHTML = "<p>Error loading posts.</p>";
+  }
 }
 
-/* Header */
-header {
-  background: rgba(136,160,144,0.9);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 60px;
-}
-header .logo {font-size: 1.8rem; font-weight: 600; color: #f7f6f2;}
-nav a {color: #f7f6f2; text-decoration: none; margin: 0 15px; padding: 6px 10px; border-radius: 20px;}
-nav a:hover {background: rgba(255,255,255,0.25);}
-nav a.active {background: #e6e4dd; color: #37423d;}
-nav .btn {background: #e6e4dd; color: #446b5c; padding: 8px 15px; border-radius: 25px;}
+loadPosts();
+// Created a new community post
+document.getElementById("joinBtn").addEventListener("click", async () => {
+  const username = prompt("Enter your name:");
+  const content = prompt("Write your post:");
 
-/* Community Section */
-.community-section {
-  text-align: center;
-  padding: 80px 20px;
-}
-.community-section h1 {
-  color: #446b5c;
-  font-size: 2.2rem;
-  margin-bottom: 20px;
-}
-.posts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 25px;
-  max-width: 900px;
-  margin: auto;
-}
-.post-card {
-  background: white;
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-.post-card h3 { color: #446b5c; margin-bottom: 10px; }
-.post-card p { color: #55625d; font-size: 0.95rem; }
+  if (!username || !content) {
+    alert("Both fields are required!");
+    return;
+  }
 
-.join-btn {
-  background: #446b5c;
-  color: #f7f6f2;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  margin-top: 30px;
-}
-.join-btn:hover { background: #5c8f7a; }
+  try {
+    const res = await fetch("http://localhost:4000/api/community", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, content }),
+    });
 
-/* Footer */
-footer {
-  background: #37423d;
-  color: #dce1dc;
-  text-align: center;
-  padding: 30px 20px;
-  margin-top: 60px;
-}
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("Post added!");
+      loadPosts(); // refreshing the  list
+    } else {
+      alert(data.error || "Failed to add post");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error creating post.");
+  }
+});
