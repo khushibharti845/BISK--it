@@ -1,38 +1,41 @@
-const uploadForm = document.getElementById("uploadForm");
+document.getElementById("uploadForm").addEventListener("submit", async (e) => {
 
-uploadForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const title = document.getElementById("title").value;
-  const cuisine = document.getElementById("cuisine").value;
+  e.preventdefault();
+ const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
   const ingredients = document.getElementById("ingredients").value;
-  const instructions = document.getElementById("instructions").value;
-  const imageFile = document.getElementById("image").files[0];
-
-  const formData = new FormData();
-  formData.append("title", title);
-  formData.append("cuisine", cuisine);
-  formData.append("ingredients", ingredients);
-  formData.append("instructions", instructions);
-  if(imageFile) formData.append("image", imageFile);
-
-  try {
-    const token = localStorage.getItem("token"); // If using authentication
-    const res = await fetch("http://localhost:5000/api/recipes", {
+  const steps = document.getElementById("instructions").value;
+  const imageUrl = document.getElementById("imageUrl").value;
+ const token = localStorage.getItem("token");
+ if (!token) {
+    alert("Please login first!");
+    window.location.href = "../login/login.html";
+    return;
+  }
+ try {
+    const res = await fetch("http://localhost:4000/api/recipes", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}` // optional
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
       },
-      body: formData
+      body: JSON.stringify({
+        title,
+        description,
+        ingredients,
+        steps,
+        image: imageUrl  
+        // upload field
+      })
     });
-    const data = await res.json();
-    if(res.ok){
+ const data = await res.json();
+    if (res.ok && data.id) {
       alert("Recipe uploaded successfully!");
-      uploadForm.reset();
+      window.location.href = "../recipe/recipe.html";
     } else {
-      alert(data.message || "Failed to upload recipe.");
+      alert(data.error || "Failed to upload recipe.");
     }
-  } catch(err){
+  } catch (err) {
     console.error(err);
     alert("Error uploading recipe.");
   }
